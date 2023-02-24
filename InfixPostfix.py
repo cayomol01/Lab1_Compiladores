@@ -13,7 +13,9 @@ def InfixPostfix(regex:str):
     # . -> concatenación
     # ? -> Cero o una vez
     #{}
-    precedence = {"+": 0, "?": 1, "*": 2}
+    if CatchErrors(regex)==False:
+        return None
+    precedence = {"|": 0, ".": 1, "*": 2, "+": 2, "?": 2}
     newRegex = ""
     
     #Agrega un signo ? cada vez que hay una concatenación
@@ -24,16 +26,15 @@ def InfixPostfix(regex:str):
             if regex[i+1] not in precedence.keys() and regex[i+1]!= ")":
                 if regex[i] == "*":
                     newRegex += regex[i]
-                    newRegex += "?"
+                    newRegex += "."
                 elif regex[i] not in precedence.keys() and regex[i]!="(":
                     newRegex += regex[i]
-                    newRegex+= "?"
+                    newRegex+= "."
                 else:
                     newRegex+=regex[i]
             else:
                 newRegex +=regex[i]
                 
-    print(newRegex)
     postfixString = ""
     operatorStack = []
     regex = newRegex
@@ -64,32 +65,18 @@ def InfixPostfix(regex:str):
                 
         else:
             postfixString += i
-        print(i, operatorStack, postfixString)
         #print("stack: ", operatorStack, "string: ", postfixString)
     while len(operatorStack)!=0:
         postfixString += operatorStack.pop()
-    print(f"{regex} -> {postfixString}")
     return (postfixString)
 
 
 def CatchErrors(regex: str):
     operadores = ["|","*","+",".","?"]
-    
-    
-    # Verificando que la expresión tenga paréntesis de apertura y cierre.
-
-    # Verificando que la expresión tenga letras o números.
-    coin = re.match(r"[a-zA-Z0-9ε]+", regex)
-
-    if not coin:
-        print("Error: La expresión regular no tiene letras o números.")
-        #print("Error: La expresión regular no puede tener números y letras.")
+    if not regex:
         return False
-
-
-    # Verificando que la expresión no tenga un * o un + al inicio.
-    coincidencia = re.match(r"^(?![*+]).*", regex)
-
-    if not coincidencia:
-        print("Error: La expresión regular no puede empezar con un * o un +.")
+    
+    if regex[0] in operadores:
         return False
+    
+

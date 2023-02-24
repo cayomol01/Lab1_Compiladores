@@ -18,16 +18,16 @@ def Thompson(expression:str):
         #con espsilon: S3 -> S5 (final)
         #con espsilon: S4 -> S5 (final)
 
-        if i == "+":
+        if i == "|":
             inicio = State(name = f's{contador}')
             contador+=1
             end = State(name = f's{contador}')
             afn1 = stack.pop()
             afn2 = stack.pop()
-            inicio.AddTransition(afn1.start, "#") #S0 (inicio) -> S1
-            inicio.AddTransition(afn2.start, "#") #S0 (inicio) -> S2
-            afn1.final.AddTransition(end, "#")    #S3 -> S5 (final)
-            afn2.final.AddTransition(end, "#")    #S4 -> S5 (final)
+            inicio.AddTransition(afn1.start, "ε") #S0 (inicio) -> S1
+            inicio.AddTransition(afn2.start, "ε") #S0 (inicio) -> S2
+            afn1.final.AddTransition(end, "ε")    #S3 -> S5 (final)
+            afn2.final.AddTransition(end, "ε")    #S4 -> S5 (final)
             afn = Automata(inicio, end)
             stack.append(afn)
             
@@ -36,7 +36,7 @@ def Thompson(expression:str):
         #Forma:
         #con char1: S0 (inicio) -> S1
         #con char2: S1 -> S2 (final)
-        elif i == "?":
+        elif i == ".":
             afn1 = stack.pop()
             afn2 = stack.pop()
             afn2.final.transitions = afn1.start.transitions
@@ -55,10 +55,38 @@ def Thompson(expression:str):
             contador+=1
             end = State(name = f's{contador}')
             afn1 = stack.pop()
-            inicio.AddTransition(afn1.start, "#")
-            afn1.final.AddTransition(afn1.start, "#")
-            afn1.final.AddTransition(end, "#")
-            inicio.AddTransition(end, "#")
+            inicio.AddTransition(afn1.start, "ε")
+            afn1.final.AddTransition(afn1.start, "ε")
+            afn1.final.AddTransition(end, "ε")
+            inicio.AddTransition(end, "ε")
+            afn = Automata(inicio, end)
+            stack.append(afn)
+            
+        #Cerradura de positiva
+        #Mismo que cerradura de kleene
+        #diferencias:
+        #- Hay una transición entre el estado inicial del afn del stack con su estado final y del final al inicial
+        #- 
+        elif i == "+":
+            inicio = State(name = f's{contador}')
+            contador+=1
+            end = State(name = f's{contador}')
+            afn1 = stack.pop()
+            inicio.AddTransition(afn1.start, "ε")
+            afn1.final.AddTransition(afn1.start, "ε")
+            afn1.start.AddTransition(afn1.final, "ε")
+            afn1.final.AddTransition(end, "ε")
+            afn = Automata(inicio, end)
+            stack.append(afn)
+            
+        elif i == "?":
+            inicio = State(name = f's{contador}')
+            contador+=1
+            end = State(name = f's{contador}')
+            afn1 = stack.pop()
+            inicio.AddTransition(afn1.start, "ε")
+            afn1.final.AddTransition(end, "ε")
+            inicio.AddTransition(end, "ε")
             afn = Automata(inicio, end)
             stack.append(afn)
             
@@ -77,16 +105,14 @@ def Thompson(expression:str):
 
             afn = Automata(start = inicio, final = end)
             stack.append(afn)
-        if i!="?":
+        if i!=".":
             contador +=1
     return stack.pop()
 
 
-s = "(a+b)*abb"
-print(s)
+s = "ab*ab*"
 InfixPostfix(s)
 
-aut = Thompson(InfixPostfix(s)) 
 print(Thompson(InfixPostfix(s)).Transiciones())
 print(" ")
    
