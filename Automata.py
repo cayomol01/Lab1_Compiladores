@@ -1,4 +1,6 @@
 import State
+import matplotlib.pyplot as plt
+import networkx as nx
 
 #Clase Automata para el algoritmo de thompson
 
@@ -9,6 +11,9 @@ class Automata():
     def __init__(self, start: State, final:State) -> None:
         self.start = start
         self.final = final
+        self.transitions = self.Transiciones()
+        self.edges = []
+        self.trans_symbols  = {}
         
     #prints transitions
     def show(self):
@@ -50,6 +55,43 @@ class Automata():
             visited.append(afn)
                 
         return trans
+    
+    def getInfo(self):
+        self.edges = []
+        self.trans_sybmols = {}
+        for i in self.transitions:
+            for j in self.transitions[i]:
+                for k in self.transitions[i][j]:
+                    self.edges.append((i,k))
+                    self.trans_sybmols[(i,k)] = j
+                    print(self.trans_sybmols)
+    
+    def ShowGraph(self):
+        G = nx.Graph()
+        G.add_edges_from(self.edges)
+        pos = nx.spring_layout(G)
+        plt.figure()
+        colores = []
+
+        for nodo in G.nodes:
+                # print(nodo)
+                colores.append('lightgreen' if nodo == 'q0' else  "pink" if nodo== self.final else   'lightblue')
+                
+
+        nx.draw(
+            G, pos, edge_color='black', width=1, linewidths=1, node_color=colores,
+            node_size=500, alpha=0.9,
+            labels={node: node for node in G.nodes()}
+        )
+        # nx.draw_networkx(G, node_color=colores, with_labels=True)
+
+        nx.draw_networkx_edge_labels(
+            G, pos,
+            edge_labels=self.trans_sybmols,
+            font_color='red'
+        )
+
+        plt.show()
     
     def subconjuntos(self):
         

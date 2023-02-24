@@ -4,6 +4,9 @@ from InfixPostfix import InfixPostfix
 
 
 def Thompson(expression:str):
+    expression = InfixPostfix(expression)
+    if not expression:
+        return None
     stack = []
     # "#" representa epsilon
     contador = 0
@@ -110,10 +113,5 @@ def Thompson(expression:str):
     return stack.pop()
 
 
-s = "ab*ab*"
-InfixPostfix(s)
-
-print(Thompson(InfixPostfix(s)).Transiciones())
-print(" ")
    
     
