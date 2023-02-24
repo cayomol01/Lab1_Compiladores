@@ -1,6 +1,7 @@
 import State
 import matplotlib.pyplot as plt
 import networkx as nx
+import pydot
 
 #Clase Automata para el algoritmo de thompson
 
@@ -9,8 +10,8 @@ import networkx as nx
 #final - Estado final
 class Automata():
     def __init__(self, start: State, final:State) -> None:
-        self.start = start
-        self.final = final
+        self.start: State = start
+        self.final: State = final
         self.transitions = self.Transiciones()
         self.edges = []
         self.trans_symbols  = {}
@@ -37,19 +38,26 @@ class Automata():
         while len(stack) != 0:
             afn = stack.pop()
             transiciones = afn.transitions.items()
-
             for key, value in transiciones:
                 if afn not in visited:
                     stack.append(key)
                     if afn.name in trans.keys():
-                        trans[afn.name] = {value: [key.name, anterior]}
+
+                        if value is list:
+                            trans[afn.name] = {tuple(value): [key.name, anterior]}
+                        else:
+                            trans[afn.name] = {value: [key.name, anterior]}
                         
                     #Transiiciones
                     #Trans = transiciones
                     #trans[afn.name] = {nombre del estado actual: {simobolo: estado al que va}}
                     
                     else:
-                        trans[afn.name] = {value: key.name}
+                        if value is list:
+    
+                            trans[afn.name] = {tuple(value): key.name}
+                        else:
+                            trans[afn.name] = {value: key.name}
                 anterior = key.name
                     
             visited.append(afn)
@@ -59,38 +67,42 @@ class Automata():
     def getInfo(self):
         self.edges = []
         self.trans_symbols = {}
+            
         for i in self.transitions:
             for j in self.transitions[i]:
-                for k in self.transitions[i][j]:
-                    self.edges.append((i,k))
-                    self.trans_symbols[(i,k)] = j
-    
+                if self.transitions[i][j][0]=="s":
+                    self.edges.append((i, self.transitions[i][j]))
+                    self.trans_symbols[(i,self.transitions[i][j])] = j
+                else:
+                    for k in self.transitions[i][j]:
+                        self.edges.append((i,k))
+                        self.trans_symbols[(i,k)] = j
+        
     def ShowGraph(self):
-        G = nx.Graph()
+        self.getInfo()
+        G = nx.DiGraph()
         G.add_edges_from(self.edges)
-        pos = nx.spring_layout(G)
-        plt.figure()
-        colores = []
 
-        for nodo in G.nodes:
-                # print(nodo)
-                colores.append('lightgreen' if nodo == 'q0' else  "pink" if nodo== self.final else   'lightblue')
-                
+        pydot_graph = nx.drawing.nx_pydot.to_pydot(G)
 
-        nx.draw(
-            G, pos, edge_color='black', width=1, linewidths=1, node_color=colores,
-            node_size=500, alpha=0.9,
-            labels={node: node for node in G.nodes()}
-        )
-        # nx.draw_networkx(G, node_color=colores, with_labels=True)
+        
+        
+        for edge in G.edges():
+            one,two = edge[0], edge[1]
+            edge_label = str(self.trans_symbols[(one,two)])
+            pydot_edge = pydot.Edge(str(edge[0]), str(edge[1]), label=edge_label)
+            pydot_graph.add_edge(pydot_edge)
+            
+        pydot_graph.get_node(self.start.name)[0].set_style('filled')
+        pydot_graph.get_node(self.start.name)[0].set('fillcolor','green')
+        
+        pydot_graph.get_node(self.final.name)[0].set_style('filled',)
+        pydot_graph.get_node(self.final.name)[0].set('fillcolor','red')
+        
 
-        nx.draw_networkx_edge_labels(
-            G, pos,
-            edge_labels=self.trans_symbols,
-            font_color='red'
-        )
+            
+        pydot_graph.write_png('graph.png', encoding="utf-8")
 
-        plt.show()
     
     def subconjuntos(self):
         

@@ -1,15 +1,7 @@
 from Thompson import Thompson
 
 if __name__=="__main__":
-    s = "ab*ab*"
-    
+    s = "0?(1?)?0+"
+
     prueba = Thompson(s)
-    prueba.getInfo()
-    for key, value in prueba.trans_symbols.items():
-        print(key,value)
-    for key, value in prueba.Transiciones().items():
-        print(key,value)
-        
     prueba.ShowGraph()
- 
-    print(" ")

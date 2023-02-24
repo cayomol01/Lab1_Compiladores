@@ -8,7 +8,7 @@ def Thompson(expression:str):
     if not expression:
         return None
     stack = []
-    # "#" representa epsilon
+    # "ε" representa epsilon
     contador = 0
     for i in expression:
         
@@ -77,12 +77,12 @@ def Thompson(expression:str):
             afn1 = stack.pop()
             inicio.AddTransition(afn1.start, "ε")
             afn1.final.AddTransition(afn1.start, "ε")
-            afn1.start.AddTransition(afn1.final, "ε")
             afn1.final.AddTransition(end, "ε")
             afn = Automata(inicio, end)
             stack.append(afn)
             
         elif i == "?":
+    
             inicio = State(name = f's{contador}')
             contador+=1
             end = State(name = f's{contador}')
@@ -104,6 +104,7 @@ def Thompson(expression:str):
             contador+=1
             end = State(name = f's{contador}')
             inicio.AddTransition(end, i)
+
             
 
             afn = Automata(start = inicio, final = end)

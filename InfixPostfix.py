@@ -27,6 +27,12 @@ def InfixPostfix(regex:str):
                 if regex[i] == "*":
                     newRegex += regex[i]
                     newRegex += "."
+                elif regex[i] == "?":
+                    newRegex += regex[i]
+                    newRegex += "."
+                elif regex[i] == "+":
+                    newRegex += regex[i]
+                    newRegex += "."
                 elif regex[i] not in precedence.keys() and regex[i]!="(":
                     newRegex += regex[i]
                     newRegex+= "."
