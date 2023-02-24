@@ -58,13 +58,12 @@ class Automata():
     
     def getInfo(self):
         self.edges = []
-        self.trans_sybmols = {}
+        self.trans_symbols = {}
         for i in self.transitions:
             for j in self.transitions[i]:
                 for k in self.transitions[i][j]:
                     self.edges.append((i,k))
-                    self.trans_sybmols[(i,k)] = j
-                    print(self.trans_sybmols)
+                    self.trans_symbols[(i,k)] = j
     
     def ShowGraph(self):
         G = nx.Graph()
@@ -87,7 +86,7 @@ class Automata():
 
         nx.draw_networkx_edge_labels(
             G, pos,
-            edge_labels=self.trans_sybmols,
+            edge_labels=self.trans_symbols,
             font_color='red'
         )
 

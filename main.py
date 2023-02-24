@@ -5,9 +5,11 @@ if __name__=="__main__":
     
     prueba = Thompson(s)
     prueba.getInfo()
-    print(prueba.edges)
-    print(prueba.trans_symbols)
+    for key, value in prueba.trans_symbols.items():
+        print(key,value)
+    for key, value in prueba.Transiciones().items():
+        print(key,value)
+        
     prueba.ShowGraph()
-    
-    print(Thompson(s).Transiciones())
+ 
     print(" ")
