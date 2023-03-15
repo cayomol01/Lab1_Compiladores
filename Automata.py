@@ -15,6 +15,7 @@ class Automata():
         self.transitions = self.Transiciones()
         self.edges = []
         self.trans_symbols  = {}
+        self.alphabet = []
         
     #prints transitions
     def show(self):
@@ -103,6 +104,14 @@ class Automata():
             
         pydot_graph.write_png('graph.png', encoding="utf-8")
 
+    def getAplhabet(self):
+        alphabet = []
+        for transitions in self.transitions.values():
+            for character in transitions.keys():
+                if character not in alphabet and character!="ε":
+                    alphabet.append(character)
+        return alphabet
+            
     
     def subconjuntos(self):
         

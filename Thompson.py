@@ -5,6 +5,7 @@ from InfixPostfix import InfixPostfix
 
 def Thompson(expression:str):
     expression = InfixPostfix(expression)
+    print(expression)
     if not expression:
         return None
     stack = []
