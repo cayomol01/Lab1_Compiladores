@@ -8,6 +8,8 @@ import pydot
 #Automata tiene un estado inicial y uno final, estado de aceptación
 #start - Estado inicial
 #final - Estado final
+
+
 class Automata():
     def __init__(self, start: State, final:State) -> None:
         self.start: State = start
@@ -30,6 +32,7 @@ class Automata():
                     stack.append(key)
                     print(afn.name, "-->",value,"-->", key.name)
             visited.append(afn)
+
     
     #pone todas las transiciones en un diccionario
     def Transiciones(self):
@@ -150,7 +153,53 @@ class Automata():
             visited.append(afn)
                 
         return trans
-            
     
+    def simulate(self, input_str):
+        current_states = set(Closure(self.transitions, self.start.name))
+        for symbol in input_str:
+            next_states = set()
+            for state in current_states:
+                next_states.update(get_groups(self.transitions, state, symbol))
+            current_states = set()
+            for state in next_states:
+                current_states.update(Closure(self.transitions, state))
+        return bool(current_states & set(self.final.name))
+    
+def Closure(transiciones: dict, state: str):
+    epsilon = "ε"
+    visited = {state}
+    stack = [state]
+    
+    while stack:
+        estado = stack.pop()
+        if estado in transiciones and epsilon in transiciones[estado]:
+            epsilon_transitions = transiciones[estado][epsilon]
+            if isinstance(epsilon_transitions, list):
+                for t in epsilon_transitions:
+                    if t not in visited:
+                        stack.append(t)
+                        visited.add(t)
+            else:
+                if epsilon_transitions not in visited:
+                    stack.append(epsilon_transitions)
+                    visited.add(epsilon_transitions)
+    return visited
+
+
+#Para esta función se ingresa lista de estados (de la clausura epsilon) y las transiciones del AFND
+def get_groups(transiciones: dict, estados:list, character: str):
+    group = set()
+    for i in estados:
+        if i in transiciones and character in transiciones[i]:
+            if isinstance(transiciones[i][character], list):
+                group.update(transiciones[i][character])
+            else:
+                group.add(transiciones[i][character])
+                
+    closure_states = set()
+    for state in group:
+        closure_states.update(Closure(transiciones, set(state)))
+    return closure_states
+
     
     

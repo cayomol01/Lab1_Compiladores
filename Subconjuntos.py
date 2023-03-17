@@ -1,4 +1,5 @@
 from Automata import Automata
+from Afd import AFD
 
 def Closure(transiciones: dict, state: str):
     epsilon = "ε"
@@ -19,9 +20,7 @@ def Closure(transiciones: dict, state: str):
                     stack.append(epsilon_transitions)
                     visited.add(epsilon_transitions)
     return visited
-        
-def list_eq(list1: list, list2: list):
-    return set(list1)==set(list2)
+
 
 #Para esta función se ingresa lista de estados (de la clausura epsilon) y las transiciones del AFND
 def get_groups(transiciones: dict, estados:list, character: str):
@@ -39,117 +38,73 @@ def get_groups(transiciones: dict, estados:list, character: str):
     return closure_states
                 
             
-        
-        
-        
-    
-        
-
-def Subconjuntos(AFN: Automata):
-    transiciones = AFN.transitions
-    alphabet = AFN.getAplhabet()
-    #State name
-    count = 0
-    state = "S"+str(count)
-    
-    #stack
-    
-    #inicializar los grupos 
-    groups = {state: Closure(transiciones, AFN.start.name)}
-    stack = [state]
-    transitions = {}
-    
-    while stack:
-        transitions.update({state:{}})
-        estado = stack.pop()
-        for i in alphabet:
-            grupos_copy = groups.copy()
-            #transitions['s0']['a']
-            #{'s0': {'a': [grupo_cerradura a]}}
-            grupos = get_groups(transiciones, groups[estado], i)
-            
-            #grupos = ['s0', 's1']
-            
-            #Encontrar los grupos con la letra del alfabeto
-            #es decir que un los el e closure con la letra a.
-            
-            #chequear si ese grupo ya está en los grupos que ya tengo
-            #junto con su estado. Es decir que su estado ya fue creado
-            
-            #Si el estado ya fue creado entonces solo agregar los grupos
-            #encontrados junto a su símbolo de transición en transitions
-            
-            #Si el estado no ha sido creado. Aumentar 1 al counter y 
-            #concatenar el numero con S.
-            #- Luego agregar el estado nuevo al stack por revisar.
-            #- Agregar el estado junto con su grupo a groups
-            #- Agregar a transiciones el simbolo con su nuevo estado creado
-            
-            
-            if grupos: 
-                for seen_state, seen_group in  grupos_copy.items():
-
-                    #Si el grupo ya existe dentro de los grupos creados
-                    if list_eq(grupos, seen_group):
-                        transitions[estado][i] = seen_state
-                    #si no existe dentro de los grupos creados
-                    #Agregar a los grupos
-                    else:
-                        #Aumentar el numero de estado
-                        count+=1
-                        state = "S"+str(count)
-                        
-                        #Agregar al stack para revisar sus transiciones
-                        stack.append(state)
-                        
-                        #Agregar a grupos
-                        groups[state] = grupos
-                        
-                        #Agregar la transición a el diccionario de transiciones
-                        transitions[estado][i] = state
-                    
 def Subconjuntos2(AFN: Automata):
     transiciones = AFN.transitions
     alphabet = AFN.getAplhabet()
+    
     #State name
     count = 0
     state = "S"+str(count)
     
     #stack
     
-    #inicializar los grupos 
+    #inicializar los grupos
+    #Se inicializa el estado inicial con su clausura de kleene respectiva
+    #La variable grupos sirve para llevar registro de los estados creados junto a los estados que representan 
     groups = {state: Closure(transiciones, AFN.start.name)}
     stack = {state}
+    #Transiciones ya con los nuevos grupos
     transitions = {}
     
+    #Mientras haya algun estado en el stack que no se haya visitado
     while stack:
+        #estado = estado a ser revisado para sus grupos
         estado = stack.pop()
+        
+        #Se inicializa un diccionario para guardar transiciones para el estado
         transitions[estado] = {}
         new_groups = {}
+        
+        #Chequear si hay transiciones para cada letra dentro del alfabeto
         for i in alphabet:
-            grupos = set()
-            for state in groups[estado]:
-                grupos |= set(get_groups(transiciones, [state], i))
+            
+            #Conseguir los grupos para el simbolo de transición -> E-Closure(delta(state, i))
+            grupos = set(get_groups(transiciones, groups[estado], i))
+            
+            #Si si existen grupos para esa transicion entonces
             if grupos: 
                 seen_state = None
+                
+                #Revisar si alguno de los grupos que ya se tienen es igual al grup
                 for s, g in groups.items():
+                    #Si el grupos ya existe dentro de los grupos que ya se tienen
+                    #Entonces agarrar el estado que representa a ese grupo
                     if grupos == g:
                         seen_state = s
                         break
+                #Si el estado ya existe entonces crear una transición que vaya hacia ese estado
                 if seen_state:
                     transitions[estado][i] = seen_state
+                #De lo contrario cambiar el contador para concatenarlo al estado
+                #Añadir el nuevo estado para revisar sus trancisiones.
+                #Añadir los nuevos estados junto a sus grupos
+                #Agregar la nueva transición al diccionario de transiciones 
                 else:
                     count += 1
                     state = "S" + str(count)
                     stack.add(state)
                     new_groups[state] = grupos
                     transitions[estado][i] = state
+                    
+                    
+        #Añadir los nuevos grupos creados al diccionario de groups
         groups.update(new_groups)
-    return transitions  
         
-    print(AFN.getAplhabet())
-    print(Closure(transiciones, AFN.start.name))
-    print(transitions)
+    finales = set([key for key, value in groups.items() if AFN.final.name in value])
+    start = "S0"
+    
+    
+    return AFD(start,finales, transitions)  
     
 
     
