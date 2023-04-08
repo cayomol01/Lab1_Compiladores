@@ -134,59 +134,7 @@ class AFD():
         
 
 
-    ''' def minimize(self, max_iterations=1000):
-        # Step 1: Create the initial partition
-        partition = [self.final, set(self.transitions.keys()) - self.final]
-
-        # Step 2: Initialize the queue
-        queue = deque(partition)
-
-        # Step 3: Process the queue
-        iterations = 0
-        while queue and iterations < max_iterations:
-            P = queue.popleft()
-            for symbol in self.transitions[self.start]:
-                X = {f"S{i}" for i, part in enumerate(partition) if any(next_state in part for state in P
-                                                                      for next_state in [self.transitions[state][symbol]])}
-                if len(X) < 2:
-                    continue
-                new_partitions = []
-                for part in partition:
-                    intersec = part.intersection(X)
-                    diff = part.difference(X)
-                    if intersec and diff:
-                        new_partitions.append(intersec)
-                        new_partitions.append(diff)
-                    else:
-                        new_partitions.append(part)
-
-                partition = new_partitions
-                for part in new_partitions:
-                    if part not in queue:
-                        queue.append(part)
-
-            iterations += 1
-
-        # Step 4: Construct the minimized DFA
-        transitions = {}
-        for i, part in enumerate(partition):
-            for state in part:
-                for symbol in self.transitions[state]:
-                    next_state = self.transitions[state][symbol]
-                    for j, part2 in enumerate(partition):
-                        if next_state in part2:
-                            transitions.setdefault(f"S{i}", {})[symbol] = f"S{j}"
-                            break
-        start_state = None
-        acceptance_states = set()
-        for i, part in enumerate(partition):
-            if self.start in part:
-                start_state = f"S{i}"
-            if part & self.final:
-                acceptance_states.add(f"S{i}")
-        return AFD(start_state, acceptance_states, transitions)
- '''
-
+    
 
 
 
@@ -278,4 +226,55 @@ class AFD():
      '''
      
      
-     
+    ''' def minimize(self, max_iterations=1000):
+        # Step 1: Create the initial partition
+        partition = [self.final, set(self.transitions.keys()) - self.final]
+
+        # Step 2: Initialize the queue
+        queue = deque(partition)
+
+        # Step 3: Process the queue
+        iterations = 0
+        while queue and iterations < max_iterations:
+            P = queue.popleft()
+            for symbol in self.transitions[self.start]:
+                X = {f"S{i}" for i, part in enumerate(partition) if any(next_state in part for state in P
+                                                                      for next_state in [self.transitions[state][symbol]])}
+                if len(X) < 2:
+                    continue
+                new_partitions = []
+                for part in partition:
+                    intersec = part.intersection(X)
+                    diff = part.difference(X)
+                    if intersec and diff:
+                        new_partitions.append(intersec)
+                        new_partitions.append(diff)
+                    else:
+                        new_partitions.append(part)
+
+                partition = new_partitions
+                for part in new_partitions:
+                    if part not in queue:
+                        queue.append(part)
+
+            iterations += 1
+
+        # Step 4: Construct the minimized DFA
+        transitions = {}
+        for i, part in enumerate(partition):
+            for state in part:
+                for symbol in self.transitions[state]:
+                    next_state = self.transitions[state][symbol]
+                    for j, part2 in enumerate(partition):
+                        if next_state in part2:
+                            transitions.setdefault(f"S{i}", {})[symbol] = f"S{j}"
+                            break
+        start_state = None
+        acceptance_states = set()
+        for i, part in enumerate(partition):
+            if self.start in part:
+                start_state = f"S{i}"
+            if part & self.final:
+                acceptance_states.add(f"S{i}")
+        return AFD(start_state, acceptance_states, transitions)
+ '''

@@ -1,20 +1,23 @@
 from Thompson import Thompson
 from Subconjuntos import Closure, get_groups, Subconjuntos2
+from TreeDFA import TreeToDFA
 
 if __name__=="__main__":
-    exp = "(a|c)*c"
+    exp = "ab*ab*"
 
     automata = Thompson(exp)
-    print(automata.transitions)
     automata.ShowGraph()
     
     afd = Subconjuntos2(automata)
-    print(afd.transitions)
     
-    print(automata.simulate("acc"))
+    afd2 = TreeToDFA(exp)
+    afd2.ShowGraph()
+    print(afd2.transitions)
+    
+    
+    
 
 
-    
     #automata.ShowGraph()
     #print("transitions: ", afd.transitions)
     #print("start_state: ", afd.start)

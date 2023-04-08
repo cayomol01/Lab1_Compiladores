@@ -163,7 +163,7 @@ class Automata():
             current_states = set()
             for state in next_states:
                 current_states.update(Closure(self.transitions, state))
-        return bool(current_states & set(self.final.name))
+        return  self.final.name in current_states
     
 def Closure(transiciones: dict, state: str):
     epsilon = "ε"

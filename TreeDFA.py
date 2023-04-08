@@ -59,7 +59,7 @@ def TreeToDFA(regex):
     #Marcamos todos los estados que tienen al estado de aceptación, mejor dicho al estado con valor #
     accepting_states = set()
     for state in states.keys():
-        if any(position == len(followpos_table) - 1 for position in state):
+        if any(position == len(followpos_table) for position in state):
             accepting_states.add(state)
     
     
@@ -89,8 +89,3 @@ def TreeToDFA(regex):
     accepting_states = new_accepting
     return AFD(start_state, accepting_states, transitions)
 
-
-afd = TreeToDFA("(a|b)*abb")
-afd.ShowGraph()
-afd = afd.minimize()
-afd.ShowGraph()
