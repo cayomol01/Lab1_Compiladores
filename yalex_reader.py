@@ -187,10 +187,12 @@ from Subconjuntos import Closure, get_groups, Subconjuntos2
 from TreeDFA import TreeToDFA
 
 if __name__ == "__main__":
-    file = "yalex/slr-3.yal"
+    file = "yalex/slr-2.yal"
     if build_regex(file):
         reg = build_regex(file)
         print(reg)
+        
+    
         #afn = Thompson(reg)
         #afn.ShowGraph2(name="outputs/a3")
     
