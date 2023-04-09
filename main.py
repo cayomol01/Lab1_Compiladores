@@ -9,12 +9,12 @@ if __name__=="__main__":
     automata.ShowGraph()
     
     afd = Subconjuntos2(automata)
-    afd.ShowGraph(name="prueba.png")
+    afd.ShowGraph2(name="outputs/pruebas")
 
     afd2 = TreeToDFA(exp2)
 
 
-    afd2.ShowGraph()
+    afd2.ShowGraph2(name="outputs/pruebas2")
     
     
     

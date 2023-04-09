@@ -2,6 +2,7 @@ import State
 import matplotlib.pyplot as plt
 import networkx as nx
 import pydot
+from graphviz import Digraph
 
 #Clase Automata para el algoritmo de thompson
 
@@ -106,6 +107,18 @@ class Automata():
 
             
         pydot_graph.write_png(name, encoding="utf-8")
+        
+    def ShowGraph2(self, name = "graph"):
+        self.getInfo()
+        dot = Digraph()
+        for state in self.getStates():
+            if state == self.final.name:
+                dot.node(str(state), shape="doublecircle")
+            else:
+                dot.node(str(state), shape="circle")
+        for edge in self.edges:
+            dot.edge(str(edge[0]), str(edge[1]), label=str(self.trans_symbols[(edge[0],edge[1])]))
+        dot.render(name, format='png', view=True, cleanup=True)
 
     def getAplhabet(self):
         alphabet = []
@@ -114,6 +127,12 @@ class Automata():
                 if character not in alphabet and character!="ε":
                     alphabet.append(character)
         return alphabet
+    
+    def getStates(self):
+        states = list(self.transitions.keys())
+        
+        states.append(self.final.name)
+        return states
             
     
     def subconjuntos(self):

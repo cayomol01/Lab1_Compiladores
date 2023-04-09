@@ -67,7 +67,7 @@ class AFD():
         print("aa")
         pydot_graph.write_png(name, encoding="utf-8")
         
-    def ShowGraph2(self, name = "graph.png"):
+    def ShowGraph2(self, name = "graph"):
         self.getInfo()
         dot = Digraph()
         for state in self.getStates():
@@ -75,9 +75,9 @@ class AFD():
                 dot.node(str(state), shape="doublecircle")
             else:
                 dot.node(str(state), shape="circle")
-        for transition in self.transitions.items():
-            dot.edge(str(transition[0]), str(transition.items[2]), label=transition[1])
-        dot.render(name, format='png', view=True)
+        for edge in self.edges:
+            dot.edge(str(edge[0]), str(edge[1]), label=str(self.trans_symbols[(edge[0],edge[1])]))
+        dot.render(name, format='jpg', view=True)
         
     def getStates(self):
         states = set(self.transitions.keys())

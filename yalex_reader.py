@@ -4,20 +4,17 @@ def remove_comments(line):
     return line
 
 
-def read_yalex(p_input):
-
+def read_yalex_rules(filename):
     definitions, tokens = {}, {}
     rule_tokens = False
 
-    with open(p_input, 'r', encoding='utf-8') as file:
+    with open(filename, 'r', encoding='utf-8') as file:
         for line in file:
-
             # Remove comments and strip
             line = remove_comments(line.strip())
 
             # It's a token
             if rule_tokens:
-
                 if line == "":
                     break # End of tokens, we can stop
 
@@ -36,18 +33,13 @@ def read_yalex(p_input):
             # It's a definition
             if "let " == line[:4]:
                 name, definition = line[4:].split(" = ")
-
                 definition = definition.replace("'E'", "ε").replace("\\n", "↓").replace("\\t", "→").replace("\\r", "↕").replace("\\s", "↔").replace(".","▪")
-
 
                 if definition.strip()[0] == "[":
                     definition.replace("['", "").replace("']", "").split(", ")
                     # TODO tengo que ver que hacer en los espacios
 
                 definitions[name.strip()] = definition.strip()
-
-
-
                 continue 
 
             # It's the rule token header
@@ -56,80 +48,67 @@ def read_yalex(p_input):
 
     return definitions, tokens
 
-def get_range(start,end):
-    #print(start, end)
-    return range(ord(start),ord(end)+1)
 
-def giga_regex(pinput: str):
-    definitions, tokens = read_yalex(pinput)
+def get_range(start, end):
+    return range(ord(start), ord(end) + 1)
 
+
+def build_regex(filename):
+    definitions, tokens = read_yalex_rules(filename)
     transtable = str.maketrans("[]\'\"", "    ")
 
-    for id, defi in definitions.items():
-
+    for name, definition in definitions.items():
         for key, true_regex in sorted(list(definitions.items()), key=lambda x:x[0].lower(), reverse=True):
-            if key in defi:
-                defi = defi.replace(key, f"{true_regex}")
+            if key in definition:
+                definition = definition.replace(key, f"{true_regex}")
 
-
-        if "[" in defi and "]" in defi:
-
-            indexa = defi.index("[")
-            in_brackets = defi[defi.index("[")+1:defi.index("]")]
-
-            #print(in_brackets)
-
+        if "[" in definition and "]" in definition:
+            indexa = definition.index("[")
+            in_brackets = definition[definition.index("[")+1:definition.index("]")]
 
             if "''" in in_brackets:
-                meme, real = in_brackets.split("''"), []
-                for let in meme:
-                    let = let.translate(transtable).strip()
-                    if let == "":
-                        let = "風"
-                    real += [let]
+                split_regex, final_regex = in_brackets.split("''"), []
+                for char in split_regex:
+                    char = char.translate(transtable).strip()
+                    if char == "":
+                        char = "風"
+                    final_regex += [char]
             else:
-                real = [defi]
+                final_regex = [definition]
 
-            sprint = ""
+            regex_str = ""
+            for regex_part in final_regex:
+                sanitized_regex = regex_part.translate(transtable).strip()
+                if "-" in sanitized_regex and len(sanitized_regex) >= 3:
+                    split_range = sanitized_regex.split(" - ")
+                    char_range = get_range(*split_range)
+                    sanitized_regex = "|".join([chr(char) for char in char_range])
+                if regex_str:
+                    regex_str += "|"
+                regex_str += sanitized_regex
+                regex_str = regex_str.replace("+", "＋")
 
-            for i in real:
-                sreg = i.translate(transtable).strip()
-                if "-" in sreg and len(sreg) >= 3:
-                    meme = sreg.split(" - ")
-                    rango = get_range(*meme)
-                    sreg = "|".join([chr(sreg) for sreg in rango])
-                if sprint:
-                    sprint += "|"
-                sprint += sreg
-                sprint = sprint.replace("+", "＋")
+            definition = definition[:indexa] + "(" + regex_str + ")" + definition[definition.index("]")+1:]
 
-            defi = defi[:indexa] + "(" + sprint + ")" + defi[defi.index("]")+1:]
+        definitions[name] = definition
 
-            #print(defi)
+    full_regex = ""
+    for name, definition in definitions.items():
+        if full_regex:
+            full_regex += "|"
+        full_regex += f"{definition}"
 
-        definitions[id] = defi
-        #print(definitions)
+    return full_regex
 
-    gigaregex = ""
-    for id, defi in definitions.items():
-        if gigaregex:
-            gigaregex += "|"
-        gigaregex += f"{defi}"
-
-    #print(gigaregex)
-
-    return gigaregex
 
 from Thompson import Thompson
 from Subconjuntos import Closure, get_groups, Subconjuntos2
 from TreeDFA import TreeToDFA
 
 if __name__ == "__main__":
-    reg = "風→|↓|風→|↓|AB|C|D|E|F|G|H|I|J|K|L|M|N|O|P|Q|R|S|T|U|V|W|X|Y|Z|a|b|c|d|e|f|g|h|i|j|k|l|m|n|o|p|q|r|s|t|u|v|w|x|y|z||01|2|3|4|5|6|7|8|9||AB|C|D|E|F|G|H|I|J|K|L|M|N|O|P|Q|R|S|T|U|V|W|X|Y|Z|a|b|c|d|e|f|g|h|i|j|k|l|m|n|o|p|q|r|s|t|u|v|w|x|y|z|AB|C|D|E|F|G|H|I|J|K|L|M|N|O|P|Q|R|S|T|U|V|W|X|Y|Z|a|b|c|d|e|f|g|h|i|j|k|l|m|n|o|p|q|r|s|t|u|v|w|x|y|z|01|2|3|4|5|6|7|8|9"
+    reg = build_regex("yalex/slr-3.yal")
+    print(reg)
     afn = Thompson(reg)
-    afd = Subconjuntos2(afn)
-    afd2 = TreeToDFA(reg)
-    print(afd.transitions)
-    afd.ShowGraph(name="pruebas.png")
+    afn.ShowGraph2(name="outputs/a3")
     
     
