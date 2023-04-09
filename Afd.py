@@ -5,6 +5,7 @@ from pythomata import SimpleDFA
 import pydot
 from collections import deque
 from queue import Queue
+from graphviz import Digraph
 
 
 
@@ -63,8 +64,20 @@ class AFD():
         if self.start in self.final:
             pydot_graph.get_node(self.start)[0].set_style('filled')
             pydot_graph.get_node(self.start)[0].set('fillcolor', 'blue')
-
+        print("aa")
         pydot_graph.write_png(name, encoding="utf-8")
+        
+    def ShowGraph2(self, name = "graph.png"):
+        self.getInfo()
+        dot = Digraph()
+        for state in self.getStates():
+            if state in self.final:
+                dot.node(str(state), shape="doublecircle")
+            else:
+                dot.node(str(state), shape="circle")
+        for transition in self.transitions.items():
+            dot.edge(str(transition[0]), str(transition.items[2]), label=transition[1])
+        dot.render(name, format='png', view=True)
         
     def getStates(self):
         states = set(self.transitions.keys())
