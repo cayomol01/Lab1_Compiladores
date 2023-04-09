@@ -82,7 +82,7 @@ class Automata():
                         self.edges.append((i,k))
                         self.trans_symbols[(i,k)] = j
         
-    def ShowGraph(self):
+    def ShowGraph(self, name="graph.png"):
         self.getInfo()
         G = nx.DiGraph()
         G.add_edges_from(self.edges)
@@ -105,7 +105,7 @@ class Automata():
         
 
             
-        pydot_graph.write_png('graph.png', encoding="utf-8")
+        pydot_graph.write_png(name, encoding="utf-8")
 
     def getAplhabet(self):
         alphabet = []

@@ -4,15 +4,17 @@ from TreeDFA import TreeToDFA
 
 if __name__=="__main__":
     exp = "ab*ab*"
-
+    exp2 = "ba(a|b)*ab"
     automata = Thompson(exp)
     automata.ShowGraph()
     
     afd = Subconjuntos2(automata)
-    
-    afd2 = TreeToDFA(exp)
+    afd.ShowGraph(name="prueba.png")
+
+    afd2 = TreeToDFA(exp2)
+
+
     afd2.ShowGraph()
-    print(afd2.transitions)
     
     
     

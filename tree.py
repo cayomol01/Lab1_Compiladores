@@ -1,7 +1,7 @@
 from InfixPostfix import InfixPostfix
 
 class Node():
-    def __init__(self, name, value = None, left = None, right = None):
+    def __init__(self, name, value=None, left=None, right=None):
         self.name = name
         self.value = value
         self.left = left
@@ -11,8 +11,8 @@ class Node():
         self.nullable = self.getNullable()
         self.followPos = None
         self.setFollowPos()
-     
-    def traverse(self):   
+
+    def traverse(self):
         nodes_to_visit = [self]
         while len(nodes_to_visit) > 0:
             current_node = nodes_to_visit.pop(0)
@@ -21,8 +21,8 @@ class Node():
             if current_node.right:
                 nodes_to_visit.append(current_node.right)
             print(current_node.followPos)
-            
-    def getNodes(self):   
+
+    def getNodes(self):
         nodes_to_visit = [self]
         nodes = [self]
         while len(nodes_to_visit) > 0:
@@ -33,7 +33,7 @@ class Node():
                 nodes_to_visit.append(current_node.right)
             nodes.append(current_node)
         return nodes
-            
+
     def getFirstPos(self):
         symbol = self.name
         firstPosition = set()
@@ -49,7 +49,8 @@ class Node():
         else:
             firstPosition = {self.value}
         return firstPosition
-    
+
+
     def getLastPos(self):
         symbol = self.name
         lastPosition = set()
@@ -65,8 +66,8 @@ class Node():
         else:
             lastPosition = {self.value}
         return lastPosition
-
-
+    
+        
     def getNullable(self):
         symbol = self.name
         nullable = None
@@ -83,7 +84,6 @@ class Node():
     def setFollowPos(self):
         symbol = self.name
         lastpos = self.lastPosition
-        
         
         if symbol == "*":
             lastpos = self.lastPosition
@@ -111,8 +111,22 @@ class Node():
                     if current_node.right:
                         nodes_to_visit.append(current_node.right)
                 
-        elif symbol not in ["*", "+",".", "|"]:
+        elif symbol == "+":
+            lastpos = self.lastPosition
+            for i in lastpos:
+                nodes_to_visit = [self]
+                while len(nodes_to_visit) > 0:
+                    current_node = nodes_to_visit.pop(0)
+                    if current_node.value == i:
+                        current_node.followPos.update(self.firstPosition)
+                    if current_node.left:
+                        nodes_to_visit.append(current_node.left)
+                    if current_node.right:
+                        nodes_to_visit.append(current_node.right)
+                        
+        elif symbol not in ["*", "+", ".", "|"]:
             self.followPos = set()
+
                 
             
     def getTable(self):
@@ -130,7 +144,7 @@ def printTree(node, level=0):
     if node != None:
         printTree(node.left, level + 1)
         if node.value:
-            print(' ' * 4 * level + '-> ' + str(node.value))
+            print(' ' * 4 * level + '-> ' + str(node.name))
         else:
             print(' ' * 4 * level + '-> ' + str(node.name))
         printTree(node.right, level + 1)
@@ -142,28 +156,43 @@ def augmentedRegex(regex):
 
 def CreateSyntaxTree(regex):
     reg = augmentedRegex(regex)
-    reg = InfixPostfix(reg)
-    operators = ["*", "+",".", "|"]
-    unary_operators = ["*", "+"]
-    binary_operators = [".", "|"]    
+    postfix = InfixPostfix(reg)
     
     stack = []
-    count = 1
-    for i in reg:
-        if i in unary_operators:
+    node_count = 1
+    for token in postfix:
+        if token == '*':
             child = stack.pop()
-            nodo = Node(i, left = child)
-            nodo.left = child
-            stack.append(nodo)
-        elif i in binary_operators:
-            child_right = stack.pop()
-            child_left = stack.pop()
-            nodo = Node(i, left = child_left, right = child_right)
-            stack.append(nodo)
+            node = Node(token, left=child)
+            stack.append(node)
+        elif token == '+':
+            child = stack.pop()
+            node = Node(token, left=child)
+            stack.append(node)
+        elif token == '.':
+            right_child = stack.pop()
+            left_child = stack.pop()
+            node = Node(token, left=left_child, right=right_child)
+            stack.append(node)
+        elif token == '|':
+            right_child = stack.pop()
+            left_child = stack.pop()
+            if len(stack) > 0 and stack[-1].value == '|':
+                # If the previous operator was also an alternation,
+                # group the current expression with the previous right child
+                prev_node = stack.pop()
+                prev_node.right = Node(token, left=prev_node.right, right=right_child)
+                stack.append(prev_node)
+            else:
+                node = Node(token, left=left_child, right=right_child)
+                stack.append(node)
         else:
-            stack.append(Node(i, value = count))
-            count+=1
+            node = Node(token, value=node_count)
+            stack.append(node)
+            node_count += 1
+    
     return stack.pop()
+
 
             
     
