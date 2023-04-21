@@ -1,5 +1,6 @@
 digraph {
 	S0 [style=bold]
 	S1 [shape=doublecircle]
-	S0 -> S1 [label=" c"]
+	S0 -> S1 [label=" a, b"]
+	S1 -> S1 [label=" a, b"]
 }

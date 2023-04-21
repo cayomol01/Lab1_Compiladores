@@ -101,7 +101,7 @@ def read_yalex_rules(filename):
             if "let" in line.split("=")[0].split(" ")[0]:
                 if checkLetStructure(line):
                     name, definition = line[4:].split(" = ")
-                    definition = definition.replace("'E'", "ε").replace("\\n", "↓").replace("\\t", "→").replace("\\r", "↕").replace("\\s", "↔").replace(".","▪")
+                    definition = definition.replace("'E'", "ε").replace("\\n", "↓").replace("\\t", "→").replace("\\r", "↕").replace("\\s", "↔").replace(".","▪").replace(" ", "□")
 
                     if definition.strip()[0] == "[":
                         definition.replace("['", "").replace("']", "").split(", ")
@@ -136,8 +136,8 @@ def get_range(start, end):
 def build_regex(filename):
     if read_yalex_rules(filename):
         definitions, tokens = read_yalex_rules(filename)
-        #print(definitions)
-        print(tokens)
+        print("Defintions: ", definitions)
+        print("Tokens: ", tokens)
         transtable = str.maketrans("[]\'\"", "    ")
         
 
@@ -181,7 +181,7 @@ def build_regex(filename):
             if full_regex:
                 full_regex += "|"
             full_regex += f"{definition}"
-
+        
         return full_regex
     else:
         return None
@@ -192,10 +192,9 @@ from Subconjuntos import Closure, get_groups, Subconjuntos2
 from TreeDFA import TreeToDFA
 
 if __name__ == "__main__":
-    file = "yalex/slr-2.yal"
+    file = "./yalex/slr-1.yal"
     if build_regex(file):
         reg = build_regex(file)
-        reg = "(↔→↓)|(↔→↓)+|(A|B|C|D|E|F|G|H|I|J|K|L|M|N|O|P|Q|R|S|T|U|V|W|X|Y|Z|a|b|c|d|e|f|g|h|i|j|k|l|m|n|o|p|q|r|s|t|u|v|w|x|y|z)|(0|1|2|3|4|5|6|7|8|9)|(0|1|2|3|4|5|6|7|8|9)+|(A|B|C|D|E|F|G|H|I|J|K|L|M|N|O|P|Q|R|S|T|U|V|W|X|Y|Z|a|b|c|d|e|f|g|h|i|j|k|l|m|n|o|p|q|r|s|t|u|v|w|x|y|z)((A|B|C|D|E|F|G|H|I|J|K|L|M|N|O|P|Q|R|S|T|U|V|W|X|Y|Z|a|b|c|d|e|f|g|h|i|j|k|l|m|n|o|p|q|r|s|t|u|v|w|x|y|z)|(0|1|2|3|4|5|6|7|8|9))*|(0|1|2|3|4|5|6|7|8|9)+(▪(0|1|2|3|4|5|6|7|8|9)+)?(ε(＋|-)?(0|1|2|3|4|5|6|7|8|9)+)?" 
         
 
         #↔→.↓.(↔→↓)
@@ -209,8 +208,7 @@ if __name__ == "__main__":
         #afn = Thompson(reg)
         
         #afd.ShowGraph2(name="outputs/prueba")
-        transitions = {'S0':{'a': 'S1', 'b': 'S1'}, 'S1':{'a': 'S1', 'b':'S1'}}
-        afd2 = AFD(start = "S0", final=["S1"], transitions=transitions)
+        afd2 = Thompson(reg)
         
-        afd2.ShowGraph2("outputs/prueba")
+        print(afd2.simulate2('ab'))
     
