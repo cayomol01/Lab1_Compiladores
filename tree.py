@@ -1,4 +1,7 @@
 from InfixPostfix import InfixPostfix
+import networkx as nx
+import pydot
+from graphviz import Digraph
 
 class Node():
     def __init__(self, name, value=None, left=None, right=None):
@@ -21,10 +24,46 @@ class Node():
             if current_node.right:
                 nodes_to_visit.append(current_node.right)
             print(current_node.followPos)
+    
+    def getNodes(self):
+        all_nodes = [self]
+        nodes_to_visit = [self]
+        while len(nodes_to_visit) > 0:
+            current_node = nodes_to_visit.pop(0)
+            if current_node.left:
+                nodes_to_visit.append(current_node.left)
+                all_nodes.append(current_node.left)
+            if current_node.right:
+                nodes_to_visit.append(current_node.right)
+                all_nodes.append(current_node.right)
+        return all_nodes
+    
+
+        
+    def ShowGraph(self, name = "tree"):
+        dot = Digraph()
+        for node in self.getNodes():
+            node_info = f"{str(node.name)}\n{str(node.value)}\n{str(node.firstPosition)}\n{str(node.lastPosition)}\n{str(node.followPos)}"
+            dot.node(node_info)
+        for node in self.getNodes():
+            node_info_root = f"{str(node.name)}\n{str(node.value)}\n{str(node.firstPosition)}\n{str(node.lastPosition)}\n{str(node.followPos)}"
+            
+            if node.left:
+                node_info_left = f"{str(node.left.name)}\n{str(node.left.value)}\n{str(node.left.firstPosition)}\n{str(node.left.lastPosition)}\n{str(node.left.followPos)}"
+                
+                dot.edge(node_info_root, node_info_left)
+
+            if node.right:
+                node_info_right = f"{str(node.right.name)}\n{str(node.right.value)}\n{str(node.right.firstPosition)}\n{str(node.right.lastPosition)}\n{str(node.right.followPos)}"
+                dot.edge(node_info_root, node_info_right)
+
+            
+        dot.render(name, format='png', view=True, cleanup=True)
+
 
     def getNodes(self):
         nodes_to_visit = [self]
-        nodes = [self]
+        nodes = []
         while len(nodes_to_visit) > 0:
             current_node = nodes_to_visit.pop(0)
             if current_node.left:
@@ -84,6 +123,7 @@ class Node():
     def setFollowPos(self):
         symbol = self.name
         lastpos = self.lastPosition
+        
         
         if symbol == "*":
             lastpos = self.lastPosition
@@ -150,22 +190,20 @@ def printTree(node, level=0):
         printTree(node.right, level + 1)
 
         
+        
     
 def augmentedRegex(regex):
-    return regex+"#"
+    return regex+"#."
 
 def CreateSyntaxTree(regex):
-    reg = augmentedRegex(regex)
-    postfix = InfixPostfix(reg)
+    postfix = InfixPostfix(regex)
+    postfix = augmentedRegex(postfix)
+    print(postfix)
     
     stack = []
     node_count = 1
     for token in postfix:
         if token == '*':
-            child = stack.pop()
-            node = Node(token, left=child)
-            stack.append(node)
-        elif token == '+':
             child = stack.pop()
             node = Node(token, left=child)
             stack.append(node)

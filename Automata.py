@@ -118,7 +118,7 @@ class Automata():
                 dot.node(str(state), shape="circle")
         for edge in self.edges:
             dot.edge(str(edge[0]), str(edge[1]), label=str(self.trans_symbols[(edge[0],edge[1])]))
-        dot.render(name, format='png', view=True, cleanup=True)
+        dot.render(name, format='pdf', view=True, cleanup=True)
 
     def getAplhabet(self):
         alphabet = []

@@ -1,0 +1,5 @@
+digraph {
+	S0 [style=bold]
+	S1 [shape=doublecircle]
+	S0 -> S1 [label=" c"]
+}

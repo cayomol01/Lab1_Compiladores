@@ -73,6 +73,8 @@ class AFD():
         for state in self.getStates():
             if state in self.final:
                 dot.node(str(state), shape="doublecircle")
+            elif state == self.start:
+                dot.node(str(state), style="bold")
             else:
                 dot.node(str(state), shape="circle")
         for edge in self.edges:
