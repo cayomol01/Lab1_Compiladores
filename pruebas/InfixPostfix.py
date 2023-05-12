@@ -121,9 +121,15 @@ def InfixPostfix(regex:str):
     
     #print(regex)
     #convertir infix postfix
+    count = 0
     for i in regex:
         #print(i)
+
         if i in precedence.keys() or i=="(" or i == ")":
+            if len(operatorStack) > 1 and operatorStack[-1]==")" and operatorStack[-2] == "(":
+                operatorStack.pop(-1)
+                operatorStack.pop(-1)
+                            
             if len(operatorStack)==0 or operatorStack[-1]=="(" or i == "(":
                 operatorStack.append(i)
             
@@ -135,6 +141,7 @@ def InfixPostfix(regex:str):
                 operatorStack.pop()
                 
             elif precedence[i] < precedence[operatorStack[-1]]:
+                
                 while precedence[i] <= precedence[operatorStack[-1]]:
                     postfixString += operatorStack.pop()
                     if len(operatorStack) == 0 or operatorStack[-1]=="(":
@@ -150,6 +157,8 @@ def InfixPostfix(regex:str):
                 
         else:
             postfixString += i
+        
+        count +=1
             
         #print("stack: ", operatorStack, "string: ", postfixString)
     while len(operatorStack)!=0:
@@ -167,7 +176,6 @@ def CatchErrors(regex: str):
     if regex[0] in operadores:
         return False
  
-InfixPostfix("(↔→↓)?|(↔→↓)+|(A|B|C)?")
 #InfixPostfix("(↔→↓)|(↔→↓)+|(A|B|C|D|E|F|G|H|I|J|K|L|M|N|O|P|Q|R|S|T|U|V|W|X|Y|Z|a|b|c|d|e|f|g|h|i|j|k|l|m|n|o|p|q|r|s|t|u|v|w|x|y|z)|(0|1|2|3|4|5|6|7|8|9)|(0|1|2|3|4|5|6|7|8|9)+|(A|B|C|D|E|F|G|H|I|J|K|L|M|N|O|P|Q|R|S|T|U|V|W|X|Y|Z|a|b|c|d|e|f|g|h|i|j|k|l|m|n|o|p|q|r|s|t|u|v|w|x|y|z)((A|B|C|D|E|F|G|H|I|J|K|L|M|N|O|P|Q|R|S|T|U|V|W|X|Y|Z|a|b|c|d|e|f|g|h|i|j|k|l|m|n|o|p|q|r|s|t|u|v|w|x|y|z)|(0|1|2|3|4|5|6|7|8|9))*|(0|1|2|3|4|5|6|7|8|9)+(▪(0|1|2|3|4|5|6|7|8|9)+)?(ε(＋|-)?(0|1|2|3|4|5|6|7|8|9)+)?")
 
 #(a|b)c

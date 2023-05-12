@@ -14,7 +14,7 @@ from graphviz import Digraph
 class Automata():
     def __init__(self, start: State, final:State) -> None:
         self.start: State = start
-        self.final: State = final
+        self.final: list = [final]
         self.transitions = self.Transiciones()
         self.edges = []
         self.trans_symbols  = {}
@@ -101,8 +101,8 @@ class Automata():
         pydot_graph.get_node(self.start.name)[0].set_style('filled')
         pydot_graph.get_node(self.start.name)[0].set('fillcolor','green')
         
-        pydot_graph.get_node(self.final.name)[0].set_style('filled',)
-        pydot_graph.get_node(self.final.name)[0].set('fillcolor','red')
+        pydot_graph.get_node(self.final[0].name)[0].set_style('filled',)
+        pydot_graph.get_node(self.final[0].name)[0].set('fillcolor','red')
         
 
             
@@ -110,9 +110,11 @@ class Automata():
         
     def ShowGraph2(self, name = "graph"):
         self.getInfo()
+        
+        final_names = [i.name for i in self.final]
         dot = Digraph()
         for state in self.getStates():
-            if state == self.final.name:
+            if state in final_names:
                 dot.node(str(state), shape="doublecircle")
             else:
                 dot.node(str(state), shape="circle")
@@ -131,7 +133,8 @@ class Automata():
     def getStates(self):
         states = list(self.transitions.keys())
         
-        states.append(self.final.name)
+        
+        states.extend(self.final.name)
         return states
             
     
@@ -192,7 +195,7 @@ class Automata():
             current_states = set()
             for state in next_states:
                 current_states.update(Closure(self.transitions, state))
-        return  self.final.name in current_states
+        return  self.final[0].name in current_states
     
     def simulate2(self, input_str):
         input_str = input_str.replace("\\n", "↓").replace("\\t", "→").replace("\\r", "↕").replace("\\s", "↔").replace(".","▪").replace(" ", "□")
@@ -208,9 +211,38 @@ class Automata():
             current_states = set()
             for state in next_states:
                 current_states.update(Closure(self.transitions, state))
-
-        return  self.final.name in current_states
+                
+                
+        #print(current_states)
+        final_names = [i.name for i in self.final]
+        #print(" ")
+        #print(final_names)
+        for i in final_names:
+            if i in current_states:
+                idx = final_names.index(i)
+                return True, self.final[idx].token
+        return  False, None
         
+    def changeNames(self, start):
+        stack = [self.start]
+        visited = [self.start]
+        counter = start
+        while stack:
+
+            lookat = stack.pop()
+            #print("bbbbb", lookat)
+            estados = lookat.GetTransitionStates()
+            #print("aaaaaa", estados)
+            #print(" ")
+            if estados:
+                for i in estados:
+                    if i not in visited:
+                        visited.append(i)
+                        stack.append(i)
+                lookat.name = f"s{counter}"
+            counter+=1
+        self.transitions = self.Transiciones()
+        return counter
     
 def Closure(transiciones: dict, state: str):
     epsilon = "ε"
@@ -257,6 +289,8 @@ def get_groups(transiciones: dict, estados:list, character: str):
     for state in group:
         closure_states.update(Closure(transiciones, set(state)))
     return closure_states
+
+
 
     
     

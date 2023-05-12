@@ -6,7 +6,7 @@ from Afd import AFD
 from Automata import Automata
 
 if __name__ == "__main__":
-    file = "./yalex/s1.yal"
+    file = "./yalex/slr-4.yal"
     if build_regex(file):
         reg = build_regex(file)
         with open('pruebas/generated.py', 'w', encoding="utf-8") as file:

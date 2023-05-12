@@ -136,8 +136,8 @@ def get_range(start, end):
 def build_regex(filename):
     if read_yalex_rules(filename):
         definitions, tokens = read_yalex_rules(filename)
-        print("Defintions: ", definitions)
-        print("Tokens: ", tokens)
+        #print("Defintions: ", definitions)
+        #print("Tokens: ", tokens)
         transtable = str.maketrans("[]\'\"", "    ")
         
 
@@ -175,14 +175,15 @@ def build_regex(filename):
                 definition = definition[:indexa] + "(" + regex_str + ")" + definition[definition.index("]")+1:]
 
             definitions[name] = definition
-
+        regexes = []
         full_regex = ""
         for name, definition in definitions.items():
             if full_regex:
                 full_regex += "|"
             full_regex += f"{definition}"
+            regexes.append((name, f"{definition}"))
         
-        return full_regex
+        return regexes
     else:
         return None
 
@@ -192,11 +193,12 @@ from Subconjuntos import Closure, get_groups, Subconjuntos2
 from TreeDFA import TreeToDFA
 
 if __name__ == "__main__":
-    file = "./yalex/slr-1.yal"
-    if build_regex(file):
-        reg = build_regex(file)
-        
-
+    pass
+    #file = "./yalex/slr-1.yal"
+    #if build_regex(file):
+    #    reg = build_regex(file)
+    #    for i in reg:
+    #       print(i)
         #↔→.↓.(↔→↓)
         #print(reg)
         #reg = "(a|b|c)"
@@ -208,7 +210,5 @@ if __name__ == "__main__":
         #afn = Thompson(reg)
         
         #afd.ShowGraph2(name="outputs/prueba")
-        afd2 = Thompson(reg)
-        
-        print(afd2.simulate2('ab'))
+
     
