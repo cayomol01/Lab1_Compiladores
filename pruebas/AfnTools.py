@@ -30,13 +30,17 @@ def create_automaton(regexes):
     
     
 def multisimul(afns, cadena):
-    for i in afns:
-        ans = i.simulate2(cadena)
-        if ans[0]== True:
-            return ans
-    return False
+    if(afns:= afns):
+        for i in afns:
+            ans = i.simulate2(cadena)
+            if ans[0]== True:
+                return ans
+        return False
+    print("\n - No se pudo realizar la simulación")
+    return
 
-def create(archivo):
+#Se crean los automatas con los archivos de Yalex puestos.
+def createReAfn(archivo):
     if build_regex(archivo):
         afns = build_regex(archivo)
         return create_automaton(afns)
@@ -44,5 +48,5 @@ def create(archivo):
         return
 
 if __name__ == "__main__":
-    a = create_automaton(build_regex('./yalex/slr-4.yal'))
-    print(multisimul(a, '@'))
+    a =createReAfn('./yalex/slr-4.yal')
+    print(multisimul(a, 'abbbbb'))

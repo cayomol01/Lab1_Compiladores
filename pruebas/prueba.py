@@ -8,6 +8,71 @@ a = Thompson(reg)
 x = 5
 y = x
 y+=1
-print(y)
+
+tokens = ['id']
+
+def moveDot(prod):
+        print(prod)
+        if prod.replace('.','')in tokens:
+            idx = prod.index('.')+len(prod)
+            prod = prod.replace('.', '')
+            new_prod = prod[:idx] + '.' + prod[idx:]
+        else: 
+            idx = prod.index('.')
+            prod = prod.replace('.', '')
+            new_prod = prod[:idx+1] + '.' + prod[idx+1:]
+        return new_prod 
+
+# .E
+# 0 1
+# E
+# 0
+#
+prov = '.id'
+a = [{'a': ['a', 'b'], 'b': ['c', 'd']}, {'c': ['a', 'b'], 'b': ['c', 'd']}]
+b = {'a': ['b', 'a'], 'b': ['d', 'c']}
 
 
+
+#checks if two dictonaries have the same elements
+def checkEquality(a,b):
+    print(a)
+    if a.keys()!=b.keys():
+        return False
+    #Tienen las mismas keys por lo tanto podemos recorrer solo uno de los diccionarios
+    for key, value in a.items():
+        c = set(a[key])
+        d = set(b[key])
+        if c !=d:
+            return False
+        
+    return True
+
+
+def multicheck(a_list, b):
+    b_list = []
+    for a in a_list:
+        b_list.append(checkEquality(a,b))
+    for i in b_list:
+        if i == True:
+            return True
+    return False
+
+c =  multicheck(a,b)
+
+
+g = 'aaaaa'
+d = 'bbbbb'
+
+h = [g,d]
+
+print('\n'.join(h))
+
+
+
+b = [True, True, True, False]
+
+c = ['a', 'b']
+c[0] = '.'+c[0]
+print(c)
+print(b[:-1], all(b[:-1]))

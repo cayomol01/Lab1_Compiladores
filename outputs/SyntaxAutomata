@@ -1,0 +1,70 @@
+digraph {
+	0 [label="I0
+E' → .E
+E → .E+T
+E → .T
+T → .T*F
+T → .F
+F → .(E)
+F → .ID"]
+	1 [label="I1
+E' → E.
+E → E.+T"]
+	2 [label="I2
+E → T.
+T → T.*F"]
+	3 [label="I3
+T → F."]
+	4 [label="I4
+F → (.E)
+F → .(E)
+F → .ID
+E → .E+T
+E → .T
+T → .T*F
+T → .F"]
+	5 [label="I5
+F → ID."]
+	6 [label="I6
+F → (E.)
+E → E.+T"]
+	7 [label="I7
+F → (E)."]
+	8 [label="I8
+E → E+.T
+T → .T*F
+T → .F
+F → .(E)
+F → .ID"]
+	9 [label="I9
+E → E+T.
+T → T.*F"]
+	10 [label="I10
+T → T*.F
+F → .(E)
+F → .ID"]
+	11 [label="I11
+T → T*F."]
+	0 -> 1 [label=E]
+	0 -> 2 [label=T]
+	0 -> 3 [label=F]
+	0 -> 4 [label="("]
+	0 -> 5 [label=ID]
+	4 -> 6 [label=E]
+	4 -> 2 [label="("]
+	4 -> 2 [label=ID]
+	4 -> 2 [label=T]
+	4 -> 2 [label=F]
+	6 -> 7 [label=")"]
+	6 -> 8 [label="+"]
+	8 -> 9 [label=T]
+	8 -> 4 [label=F]
+	8 -> 4 [label="("]
+	8 -> 4 [label=ID]
+	9 -> 10 [label="*"]
+	10 -> 11 [label=F]
+	10 -> 6 [label="("]
+	10 -> 6 [label=ID]
+	2 -> 2 [label="*"]
+	1 -> 2 [label="+"]
+}
