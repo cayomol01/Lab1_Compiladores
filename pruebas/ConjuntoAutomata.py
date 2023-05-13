@@ -1,5 +1,7 @@
 from Grammar import Grammar
-from GrammarTools import readYalp
+#from GrammarTools import readYalp
+from yalex_reader import build_regex, read_yalex_rules
+from AfnTools import createReAfn
 import networkx as nx
 import pydot
 from graphviz import Digraph
@@ -138,7 +140,7 @@ class SyntaxAutomata():
         self.edges = {}
         self.generateAutomata()
         self.changeNumbers()
-        #self.changeEdges()
+        self.changeEdges()
 
     def changeNumbers(self):
         for i in range(len(self.conjuntos)):
@@ -147,7 +149,7 @@ class SyntaxAutomata():
     def changeEdges(self):
         edges = self.edges
         new_edges = {}
-        
+
         visto = []
         
         #key -> tuple (conjunto1, conjunto2)
@@ -161,22 +163,23 @@ class SyntaxAutomata():
             if test[0]==False:
                 visto.append(a)
             else:
-                a = test[1]
+                a = visto[test[1]]
                 
             test = multicheck(vis, key[1].newprod)
             
             if test[0]==False:
                 visto.append(b)
             else:
-                b = test[1]
+                b = visto[test[1]]
                 
             new_edges[(a,b)] = value
+            
+        self.edges = new_edges.copy()
                 
             
             
                 
             
-        pass
 
     #Esta función sirve para sacar todos los conjuntos que pueden salir de un conjunto dado
     #Usa la función Ir_a para sacar dichos conjuntos. 
@@ -237,7 +240,7 @@ class SyntaxAutomata():
             print('')
             count +=1
             
-    def ShowGraph(self, name="graph.png"):
+    def ShowGraph(self, name="SyntaxAutomata"):
         G = Digraph(encoding='utf-8')
         
         for i in self.conjuntos:
@@ -254,7 +257,7 @@ class SyntaxAutomata():
             G.edge(str(key[0].number), str(key[1].number), label=value)
             
         
-        G.render(filename='SyntaxAutomata', directory='./outputs',format='png', view=True)
+        G.render(filename=name, directory='./outputs',format='png', view=True)
 
         
     
@@ -262,51 +265,16 @@ class SyntaxAutomata():
         
         
         
-if __name__ == '__main__':
-    if __name__ == '__main__':
-        prod = readYalp('./Yalp/slr-1.yalp')
+#if __name__ == '__main__':
+#    afn = read_yalex_rules('./Yalp/slr-1.yal')
+#    print(afn)
     
-    p1 = {'E':['E+T|T'], 'T':['T∗F|F']}
-    g = Grammar(*prod)
-    g.AugmentedGrammar()
-    #print(g.tokens)
-
-    c0 = Conjunto(g, 0, corazon={g.initial: g.prod[g.initial]})
-    
-    a1 = SyntaxAutomata(c0)
-    
-
-    a1.ShowGraph()
-    #for i in b:
-    #    print(i.newprod)
-    count = 1
-   
-    #b = a1.getConjuntos(c0)
-    
-
-    #print(c0.corazon)
-    #print('aaaaaa', c0.resto)
-    #c1 = c0.Ir_A('E')
-    #print(c1.newprod)
-    #print(c1.corazon)
-    #print(" ")
-    #
-    #c2 = c1.Ir_A('+')
-    #print(c2.corazon)
-    #print(c2.resto)
-    #print(" ")
-    #
-    #c3 = c2.Ir_A('T')
-    #print(c3.corazon)
-    #print(c3.resto)
-    #print(" ")
-    #
-    #c4 = c3.Ir_A('*')
-    #print(c4.corazon)
-    #print(c4.resto)
-#
-    ##print('No Terminales: ', g.nonterminals)
-    ##print('Terminales: ', g.terminals)
-    #print('Producciones: ', g.prod)
-    #print('Tokens: ', g.tokens)
-    #print('Inicial: ', g.initial)
+        #g = Grammar(*prod)
+        #g.AugmentedGrammar()
+        ##print(g.tokens)
+        #
+        #c0 = Conjunto(g, 0, corazon={g.initial: g.prod[g.initial]})
+        #
+        #a1 = SyntaxAutomata(c0)
+        #
+        #a1.ShowGraph()
