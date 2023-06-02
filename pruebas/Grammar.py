@@ -57,7 +57,6 @@ class Grammar():
             
     def AugmentedGrammar(self):
         new_nonterminal = self.initial +"'"
-        new_val = [new_nonterminal, *self.nonterminals]
         self.prod[new_nonterminal] = [self.initial]
         self.initial = new_nonterminal
         

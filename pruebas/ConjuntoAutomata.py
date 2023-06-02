@@ -1,5 +1,5 @@
 from Grammar import Grammar
-#from GrammarTools import readYalp
+from GrammarTools import readYalp, Siguiente, checkTokens
 from yalex_reader import build_regex, read_yalex_rules
 from AfnTools import createReAfn
 import networkx as nx
@@ -40,6 +40,7 @@ class Conjunto():
         self.addDot()
         self.resto = self.Cerradura()
         self.newprod = self.newProducciones()
+        
 
         
     def addDot(self):
@@ -134,13 +135,15 @@ class Conjunto():
 
 
 class SyntaxAutomata():
-    def __init__(self,initial_state):
+    def __init__(self,initial_state, grammar):
         self.initial_state = initial_state
         self.conjuntos = [self.initial_state]
+        self.grammar = grammar
         self.edges = {}
         self.generateAutomata()
         self.changeNumbers()
         self.changeEdges()
+        self.tabla = self.CreateTable()
 
     def changeNumbers(self):
         for i in range(len(self.conjuntos)):
@@ -258,6 +261,156 @@ class SyntaxAutomata():
             
         
         G.render(filename=name, directory='./outputs',format='png', view=True)
+        
+    #Retorna todas las transiciones de un número de conjunto dado. 
+    def getTransitions(self, number):
+        transiciones = {}
+        for i in self.edges.keys():
+            if i[0].number==number:
+                transiciones[self.edges[i]] = i[1].number
+        return transiciones
+    
+    def addEdge(self, number1, number2, transition):
+        c = Conjunto(self.initial_state.grammar, number2)
+        self.conjuntos.append(c)
+        for i in self.conjuntos:
+            if i.name == number1:
+                c2 = i
+        self.edges[(c2, c)] = transition
+                
+        
+    #El parametro cadena será una lista con todos los tokens identificados del archivo
+    def Simulation(self, entrada:list):
+        grammar = self.grammar
+        producciones = {}
+
+        
+        count = 1
+        for key, value in [(key, value) for key,value in grammar.prod.items() if key!="E'"]:
+            for i in value:
+                productions = []
+                if i !="ID":
+                    for j in i:
+                        productions.append(j)
+                    producciones[count] = {key:productions}
+                    count+=1
+                else:
+                    producciones[count] = {key: [i]}
+                    count+=1
+        e = entrada
+        entrada.append("$")
+        pila = [0]
+        
+        
+        while True:
+            action = self.tabla["Accion"][e[0]][pila[-1]]
+            
+            if action[0]=='s':
+                pila.append(int(action[1:]))
+                e = e[1:]
+            elif action[0]=='r':
+                #Ej r6
+                num = int(action[1:])
+                prod = producciones[num]
+                key = list(prod.keys())[0]
+                for i in range(len(prod[key])):
+                    pila.pop()
+                pila.append(self.tabla["Ir_a"][key][pila[-1]])
+                
+            elif action=='ACCEPT':
+                return True
+            else:
+                pila.append(action)
+            
+            if not entrada:
+                return False
+                
+        
+
+    def CreateTable(self):
+        grammar = self.grammar
+        
+        producciones = {}
+        
+        count = 1
+        for key, value in [(key, value) for key,value in grammar.prod.items() if key!="E'"]:
+            for i in value:
+                producciones[f'{key}->' + i] = count
+                count+=1
+        
+        non_terminals = grammar.nonterminals
+        terminals = grammar.terminals
+        
+        siguientes = {}
+        
+        for i in non_terminals: 
+            siguientes[i] = list(Siguiente(grammar, i))
+        
+        terminals.add('$')
+        
+        tabla = {}
+        
+        estados = [i for i in range(len(self.conjuntos))]
+        
+        tabla["Estados"] = estados
+        
+        tabla["Accion"] = {}
+        
+        tabla["Ir_a"] = {}
+        
+        
+        for i in terminals:
+            tabla["Accion"][i] = ["" for i in range(len(estados))]
+            
+        tabla["Accion"]['$'][1] = "ACCEPT"
+            
+        for i in non_terminals:
+            tabla["Ir_a"][i] = ["" for i in range(len(estados))]
+            
+        #Conseguir los shifts para la tabla
+        
+        for i in tabla["Estados"]:
+            trans = self.getTransitions(i)
+            for terminal, conjunto in trans.items():
+                if terminal in terminals:
+                    tabla["Accion"][terminal][i] = f's{conjunto}'
+                    
+        for i in tabla["Estados"]:
+            trans = self.getTransitions(i)
+            for nonterminal, conjunto in trans.items():
+                if nonterminal in non_terminals:
+                    tabla["Ir_a"][nonterminal][i] = conjunto
+        
+
+        
+        #Conjuntos
+        for i in self.conjuntos:
+            #Producciones por cada conjunto
+            for encabezado, values in i.newprod.items():
+                #Revisar si hay un punto al final y no es estado de aceptación
+                for prod in values:
+                    if prod[-1] == '.' and i.number != 1:
+                        #Revisar siguientes para ponerlo en la tabla
+                        #{'E': ['a', 'b']...}
+                        for key, value in siguientes.items():
+                            #Recoger encabezado
+                            if key == encabezado:
+                                for j in value:
+                                    numero = producciones[f'{encabezado}->{prod[:-1]}']
+                                    tabla["Accion"][j][i.number] = f'r{numero}'
+                                    
+        return tabla
+    
+
+    
+    
+
+                    
+                
+        
+            
+
+        
 
         
     
@@ -265,16 +418,67 @@ class SyntaxAutomata():
         
         
         
-#if __name__ == '__main__':
-#    afn = read_yalex_rules('./Yalp/slr-1.yal')
-#    print(afn)
+if __name__ == '__main__':
     
-        #g = Grammar(*prod)
-        #g.AugmentedGrammar()
-        ##print(g.tokens)
-        #
-        #c0 = Conjunto(g, 0, corazon={g.initial: g.prod[g.initial]})
-        #
-        #a1 = SyntaxAutomata(c0)
-        #
-        #a1.ShowGraph()
+    
+    if(prod:=readYalp('./Yalp/slr-1.yalp')):
+        afn = read_yalex_rules('./Yalp/slr-1.yal')
+        if(checkTokens(afn[1].values(), prod[1])):
+            g = Grammar(*prod)
+            
+            prod = readYalp('./Yalp/slr-1.yalp')
+            prod2 = readYalp('./Yalp/slr-1.yalp')
+
+            print(" ")
+            print('No Terminales: ', g.nonterminals)
+            print('Terminales: ', g.terminals)
+            print('Producciones: ', g.prod)
+            print('Tokens: ', g.tokens)
+            print('Inicial: ', g.initial)
+            print(" ")
+            
+
+            
+            #p = {}
+            #s = {}
+            #for i in g.nonterminals:
+            #    p[i] = First2(g,i)
+            #    s[i] = list(Siguiente(g, i))
+            #print(f'Primero: {p}')
+            #print(f'Siguiente: {s}')
+            
+            prod = readYalp('./Yalp/slr-1.yalp')
+            prod2 = readYalp('./Yalp/slr-1.yalp')
+
+            
+            g = Grammar(*prod)
+            g.AugmentedGrammar()
+            
+            g1 = Grammar(*prod2)
+            g1.AugmentedGrammar()
+            
+            print(g.prod)
+            
+            #print(g.tokens)
+
+            c0 = Conjunto(g, 0, corazon={g.initial: g.prod[g.initial]})
+            a1 = SyntaxAutomata(c0, g1)
+
+            
+            
+            l = ['ID', '*', 'ID', '+', 'ID']
+            print(a1.Simulation(l))
+                    
+            
+            #s = siguiente(g, p, X=g.initial)
+            #print(f'Siguiente {s}')
+            #
+            #g.AugmentedGrammar()
+            #
+            #c0 = Conjunto(g, 0, corazon={g.initial: g.prod[g.initial]})
+#
+            #a1 = SyntaxAutomata(c0)
+            #
+            #a1.ShowGraph()
+        else:
+            print('Los tokens no son iguales entre archivos')

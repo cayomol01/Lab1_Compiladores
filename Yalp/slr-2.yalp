@@ -12,7 +12,6 @@
 %token NUMBER
 %token LPAREN
 %token RPAREN
-%token WHITESPACE
 IGNORE WHITESPACE
 
 %%

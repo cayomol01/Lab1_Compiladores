@@ -1,7 +1,6 @@
 from Grammar import Grammar
 from yalex_reader import build_regex, read_yalex_rules
 from AfnTools import createReAfn
-from ConjuntoAutomata import Conjunto, SyntaxAutomata
 
 conjuntos = dict()
 
@@ -26,91 +25,127 @@ def checkLeftRecursiveness(X, productions):
         return X
     return False
 
-def primero(grammar: Grammar, X):
+
+def First2(grammar, X):
     g = grammar
-    terminales = g.terminals
-    noterminales = g.nonterminals
-    producciones = g.prod
+    terminals = g.terminals
+    nonterminals = g.nonterminals
+    productions = g.prod
     
-    if X not in conjuntos.keys():
-        conjuntos[X] = []
-        
-    #Si X es un terminal
-    if X in terminales:
-        conjuntos[X].append(X)
-        return
-    temp = list(producciones[X])
+    
+    if X in terminals:
+        return X
+    else:
+        conjunto = []
+        if 'ε' in productions[X]:
+            conjunto.append('ε')
+            
+        for prod in productions[X]:
+            if prod in terminals:
+                conjunto.append(First2(g, prod))
+            else:
+                if prod[0]!=X:
+                    if len(prod)>1:
+                        if prod[0] in terminals:
+                            conjunto.append(First2(g, prod[0]))
+                            continue
+                        else:
+                            count = 0
+                            for i in range(len(prod)-1):
+                                conjunto.append(First2(g, prod[i]))
+                                if 'ε' in productions[prod[i]] and count == i:
+                                    conjunto.append(First2(g, prod[i+1]))
+                                    count+=1
+                            count = 0
+                            for i in range(len(prod)):
+                                if 'ε' in productions[prod[i]] and count == i:
+                                    conjunto.append(First2(g, prod[i+1]))
+                                    count+=1
+                            conjunto.append(First2(g, 'ε'))
+                                
+                    else:
+                        conjunto = [*First2(g, prod)]
+    return conjunto
+    
+    ''' if primeros is None:
+        primeros = {}
+        for nt in grammar.nonterminals:
+            primeros[nt] = set()
 
-    
-    #Si se tiene la producción X -> ε
-    if 'ε' in producciones[X]:
-        conjuntos[X].append('ε')
-        temp.remove('ε')
-        
-    #Recoger solo los temprales que tienen la forma y1y2...
-    temp = [i for i in temp if len(i)>=2]
-    
-    true_temp = [[CheckEspsilon(symbol, producciones) for symbol in prod] for prod in temp]
-    
-    #Si X es un no terminal y hay una producción de la forma X-> y1y2..yk
-    if not grammar:
-        if X in noterminales and temp:
-            for prod in range(len(temp)):
-                for symbol in range(len(temp[prod])):
-                    if (new_symbol:=checkLeftRecursiveness(temp[prod][symbol], g.prod)):
-                        conjuntos[X].append(primero(g, new_symbol)) #primero(y1) pertenece a primero(X)
-                    if symbol >0: #Para los siguientes símbolos
-                        if all(true_temp[prod][:symbol]):
-        
-                            new_symbol=checkLeftRecursiveness(temp[prod][symbol], g.prod)
-                            conjuntos[X].append(primero(g, new_symbol))
-                        elif all(true_temp[prod][symbol]):
-                            conjuntos[X].append('ε')
-    return res1
-        
+    if X in grammar.terminals:
+        primeros[X].add(X)
+    else:
+        for prod in grammar.prod[X]:
+            if len(prod) > 0:
+                first_simbolo = prod[0]
 
-    
-def siguiente(grammar, res_primero, X = None):
+                # If it's a nonterminal, recursively compute its First set
+                if first_simbolo in grammar.nonterminals:
+                    First(grammar, first_simbolo, primeros)
+
+                    # Update First(X) with First(Y1) - {ε}
+                    primeros[X].update(primeros[first_simbolo] - {'ε'})
+
+                    # If First(Y1) contains ε, continue with the next symbol in the production
+                    if 'ε' in primeros[first_simbolo]:
+                        i = 1
+                        while i < len(prod) and 'ε' in primeros[first_simbolo]:
+                            next_simbolo = prod[i]
+                            if next_simbolo in grammar.terminals:
+                                primeros[X].add(next_simbolo)
+                                break
+                            else:
+                                First(grammar, next_simbolo, primeros)
+                                primeros[X].update(primeros[next_simbolo] - {'ε'})
+                                if 'ε' not in primeros[next_simbolo]:
+                                    break
+                            i += 1
+
+                # If it's a terminal, add it to First(X)
+                elif first_simbolo in grammar.terminals:
+                    primeros[X].add(first_simbolo)
+
+            # If the production is empty, add ε to First(X)
+            else:
+                primeros[X].add('ε')
+
+    return primeros '''
+
+
+def Siguiente(grammar: Grammar, X):
     g = grammar
-    terminales = g.terminals
-    noterminales = g.nonterminals
-    producciones = g.prod
+    terminals = g.terminals
+    nonterminals = g.nonterminals
+    productions = g.prod
     
-    if X not in conjuntos.keys():
-        conjuntos[X] = []
+    conjunto = []
+    new_prod = []
+    
+    if X == g.initial:
+        conjunto.append('$')
         
-    #Si X es un terminal
-    if X in terminales:
-        conjuntos[X].append(X)
-        return
-    temp = list(producciones[X])
+    for key, value in productions.items():
+        for i in value:
+            if X in i and i not in terminals:
+                new_prod.append((key,i))
+  
+  
+    for key, value in new_prod:
+        idx = value.index(X)
+        if idx != len(value)-1:
+            datos = [i for i in First2(g, value[idx+1]) if i!="ε"]
+            conjunto.extend(datos)
+        if (idx!=len(value)-1 and 'ε' in First2(g, value[2])) or (value[-1]==X):
+            if key !=X:
+                conjunto.extend(Siguiente(g, key))
+                
+    return set(conjunto)
 
     
-    #Si se tiene la producción X -> ε
-    if 'ε' in producciones[X]:
-        conjuntos[X].append('ε')
-        temp.remove('ε')
-        
-    #Recoger solo los temprales que tienen la forma y1y2...
-    temp = [i for i in temp if len(i)>=2]
     
-    true_temp = [[CheckEspsilon(symbol, producciones) for symbol in prod] for prod in temp]
-    
-    #Si X es un no terminal y hay una producción de la forma X-> y1y2..yk
-    if not grammar:
-        if X in noterminales and temp:
-            for prod in range(len(temp)):
-                for symbol in range(len(temp[prod])):
-                    if (new_symbol:=checkLeftRecursiveness(temp[prod][symbol], g.prod)):
-                        conjuntos[X].append(primero(g, new_symbol)) #primero(y1) pertenece a primero(X)
-                    if symbol >0: #Para los siguientes símbolos
-                        if all(true_temp[prod][:symbol]):
         
-                            new_symbol=checkLeftRecursiveness(temp[prod][symbol], g.prod)
-                            conjuntos[X].append(primero(g, new_symbol))
-                        elif all(true_temp[prod][symbol]):
-                            conjuntos[X].append('ε')
-    return res2
+
+    
 
 
 def remove_comments(line):
@@ -256,18 +291,48 @@ if __name__ == '__main__':
             print('Inicial: ', g.initial)
             print(" ")
             
-            p = primero(g, g.initial)
-            print(f'Primero: {p}')
+
             
-            s = siguiente(g, p, X=g.initial)
-            print(f'Siguiente {s}')
+            #p = {}
+            #s = {}
+            #for i in g.nonterminals:
+            #    p[i] = First2(g,i)
+            #    s[i] = list(Siguiente(g, i))
+            #print(f'Primero: {p}')
+            #print(f'Siguiente: {s}')
             
+            prod = readYalp('./Yalp/slr-1.yalp')
+            prod2 = readYalp('./Yalp/slr-1.yalp')
+
+            
+            g = Grammar(*prod)
             g.AugmentedGrammar()
             
-            c0 = Conjunto(g, 0, corazon={g.initial: g.prod[g.initial]})
-
-            a1 = SyntaxAutomata(c0)
+            g1 = Grammar(*prod2)
+            g1.AugmentedGrammar()
             
-            a1.ShowGraph()
+            print(g.prod)
+            
+            #print(g.tokens)
+
+            c0 = Conjunto(g, 0, corazon={g.initial: g.prod[g.initial]})
+            a1 = SyntaxAutomata(c0, g1)
+
+            
+            
+            l = ['ID', '*', 'ID', '+', 'ID']
+            print(a1.Simulation(l))
+                    
+            
+            #s = siguiente(g, p, X=g.initial)
+            #print(f'Siguiente {s}')
+            #
+            #g.AugmentedGrammar()
+            #
+            #c0 = Conjunto(g, 0, corazon={g.initial: g.prod[g.initial]})
+#
+            #a1 = SyntaxAutomata(c0)
+            #
+            #a1.ShowGraph()
         else:
             print('Los tokens no son iguales entre archivos')
